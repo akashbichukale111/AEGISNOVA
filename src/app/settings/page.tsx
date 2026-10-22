@@ -74,6 +74,17 @@ export default function SettingsPage() {
             badge={<Badge variant="demo">SAFE ADAPTERS</Badge>}
           />
           <div className="space-y-3 text-xs font-mono">
+            <div className="p-3 rounded-lg bg-cyan-950/20 border border-cyan-800/40 flex items-center justify-between">
+              <div>
+                <div className="text-white font-semibold flex items-center gap-1.5">
+                  <Cpu className="h-3.5 w-3.5 text-cyan-400" />
+                  Nebius AI Studio (Nebius × NVIDIA Hackathon)
+                </div>
+                <div className="text-cyan-400/80 text-[10px]">Token Authenticated • nvidia/Nemotron-3_5-Lightning • Hopper GH100</div>
+              </div>
+              <Badge variant="connected">KEY CONFIGURED</Badge>
+            </div>
+
             <div className="p-3 rounded-lg bg-emerald-950/20 border border-emerald-800/40 flex items-center justify-between">
               <div>
                 <div className="text-white font-semibold flex items-center gap-1.5">

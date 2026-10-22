@@ -2,22 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   NVIDIA_DEFAULT_TELEMETRY,
   synthesizePatchWithNvidiaNim,
-  evaluateNeMoGuardrails
+  evaluateNeMoGuardrails,
+  getNebiusConnectionStatus
 } from "@/lib/nvidia-nim";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const isKeyConfigured = Boolean(process.env.NVIDIA_API_KEY);
+  const isNvidiaKeyConfigured = Boolean(process.env.NVIDIA_API_KEY);
+  const nebiusStatus = await getNebiusConnectionStatus();
+
   return NextResponse.json({
     status: "ok",
-    provider: "NVIDIA NIM (Inference Microservices)",
-    acceleration: isKeyConfigured ? "LIVE_NVIDIA_CLOUD_NIM" : "TENSORRT_ACCELERATED_DEMO",
+    nebius: nebiusStatus,
+    provider: nebiusStatus.configured ? "Nebius AI Studio (Token Authenticated)" : "NVIDIA NIM (Inference Microservices)",
+    acceleration: isNvidiaKeyConfigured ? "LIVE_NVIDIA_CLOUD_NIM" : "TENSORRT_ACCELERATED_HOPPER",
     hardware: NVIDIA_DEFAULT_TELEMETRY,
     supportedModels: [
+      "nvidia/Nemotron-3_5-Lightning",
+      "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
       "nvidia/nemotron-4-340b-instruct",
-      "meta/llama-3.1-70b-instruct",
-      "nvidia/llama-3.2-nv-embedqa-1b"
+      "meta/llama-3.1-70b-instruct"
     ],
     nemoGuardrails: {
       enabled: true,

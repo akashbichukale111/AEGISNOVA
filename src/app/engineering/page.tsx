@@ -253,9 +253,9 @@ export default function EngineeringStudioPage() {
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold tracking-tight text-white">Autonomous Engineering Studio</h1>
                 <Badge variant="connected">ACTIVE ENGINE</Badge>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/80 flex items-center gap-1">
-                  <Zap className="h-3 w-3 text-emerald-400" />
-                  NVIDIA NIM • Nemotron-4-340B
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/80 flex items-center gap-1">
+                  <Zap className="h-3 w-3 text-cyan-400" />
+                  Nebius AI Studio • NVIDIA Nemotron • Hopper GH100
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
