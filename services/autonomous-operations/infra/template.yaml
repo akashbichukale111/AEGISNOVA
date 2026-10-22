@@ -1,0 +1,247 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AEGISNOVA Autonomous Operations - OPTIONAL AWS infrastructure (SAM/CloudFormation).
+  NOT DEPLOYED by the build that produced this file. Review, then deploy manually (see docs/AWS_DEPLOYMENT_GUIDE.md).
+
+Parameters:
+  Stage:
+    Type: String
+    Default: dev
+    AllowedPattern: '^[a-z0-9-]{2,12}$'
+  MaxReceiveCount:
+    Type: Number
+    Default: 5
+    MinValue: 1
+  VisibilityTimeoutSeconds:
+    Type: Number
+    Default: 180
+    Description: SQS visibility timeout. Keep >= 6x the worker's per-message execution limit (default worker limit 30s).
+  DlqAlarmThreshold:
+    Type: Number
+    Default: 1
+  QueueDepthAlarmThreshold:
+    Type: Number
+    Default: 500
+  QueueAgeAlarmSeconds:
+    Type: Number
+    Default: 900
+  AlarmTopicArn:
+    Type: String
+    Default: ''
+    Description: Optional SNS topic for alarm actions. Empty = alarms have NO actions (explicit opt-in).
+  KmsKeyArn:
+    Type: String
+    Default: ''
+    Description: Optional customer-managed KMS key for SNS. Empty = no SNS key.
+
+Conditions:
+  HasAlarmTopic: !Not [!Equals [!Ref AlarmTopicArn, '']]
+  HasKms: !Not [!Equals [!Ref KmsKeyArn, '']]
+
+Resources:
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub 'aegisnova-ops-${Stage}-dlq'
+      MessageRetentionPeriod: 1209600
+      SqsManagedSseEnabled: true
+
+  WorkQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub 'aegisnova-ops-${Stage}-work'
+      VisibilityTimeout: !Ref VisibilityTimeoutSeconds
+      ReceiveMessageWaitTimeSeconds: 20
+      MessageRetentionPeriod: 345600
+      SqsManagedSseEnabled: true
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: !Ref MaxReceiveCount
+
+  ApprovalQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub 'aegisnova-ops-${Stage}-approvals'
+      ReceiveMessageWaitTimeSeconds: 20
+      SqsManagedSseEnabled: true
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: !Ref MaxReceiveCount
+
+  NotifyQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub 'aegisnova-ops-${Stage}-notify'
+      ReceiveMessageWaitTimeSeconds: 20
+      SqsManagedSseEnabled: true
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: !Ref MaxReceiveCount
+
+  WorkQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues: [!Ref WorkQueue, !Ref DeadLetterQueue, !Ref ApprovalQueue, !Ref NotifyQueue]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 'sqs:*'
+            Resource:
+              - !GetAtt WorkQueue.Arn
+              - !GetAtt DeadLetterQueue.Arn
+              - !GetAtt ApprovalQueue.Arn
+              - !GetAtt NotifyQueue.Arn
+            Condition:
+              Bool:
+                aws:SecureTransport: 'false'
+
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub 'aegisnova-ops-${Stage}-notifications'
+      KmsMasterKeyId: !If [HasKms, !Ref KmsKeyArn, !Ref 'AWS::NoValue']
+
+  StateMachineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: {Service: states.amazonaws.com}
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: send-to-ops-queues-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'sqs:SendMessage'
+                Resource:
+                  - !GetAtt WorkQueue.Arn
+                  - !GetAtt ApprovalQueue.Arn
+                  - !GetAtt NotifyQueue.Arn
+                  - !GetAtt DeadLetterQueue.Arn
+
+  GovernedActionStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Name: !Sub 'aegisnova-ops-${Stage}-governed-action'
+      Type: STANDARD
+      DefinitionUri: state_machine.asl.json
+      DefinitionSubstitutions:
+        WorkQueueUrl: !Ref WorkQueue
+        ApprovalQueueUrl: !Ref ApprovalQueue
+        NotifyQueueUrl: !Ref NotifyQueue
+        DeadLetterQueueUrl: !Ref DeadLetterQueue
+      Role: !GetAtt StateMachineRole.Arn
+
+  AppRuntimePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Least-privilege policy for the AEGISNOVA ops worker (attach to YOUR runtime role).
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: ConsumeWork
+            Effect: Allow
+            Action: ['sqs:ReceiveMessage', 'sqs:DeleteMessage', 'sqs:ChangeMessageVisibility', 'sqs:GetQueueAttributes', 'sqs:SendMessage']
+            Resource: [!GetAtt WorkQueue.Arn, !GetAtt ApprovalQueue.Arn, !GetAtt NotifyQueue.Arn]
+          - Sid: DlqInspectAndRedrive
+            Effect: Allow
+            Action: ['sqs:ReceiveMessage', 'sqs:DeleteMessage', 'sqs:GetQueueAttributes', 'sqs:StartMessageMoveTask', 'sqs:ListMessageMoveTasks']
+            Resource: !GetAtt DeadLetterQueue.Arn
+          - Sid: DriveWorkflow
+            Effect: Allow
+            Action: ['states:StartExecution', 'states:StopExecution', 'states:DescribeExecution']
+            Resource:
+              - !Ref GovernedActionStateMachine
+              - !Sub 'arn:${AWS::Partition}:states:${AWS::Region}:${AWS::AccountId}:execution:aegisnova-ops-${Stage}-governed-action:*'
+          - Sid: TaskCallbacks
+            Effect: Allow
+            Action: ['states:SendTaskSuccess', 'states:SendTaskFailure', 'states:SendTaskHeartbeat']
+            Resource: !Ref GovernedActionStateMachine
+          - Sid: PublishNotifications
+            Effect: Allow
+            Action: 'sns:Publish'
+            Resource: !Ref NotificationTopic
+          - Sid: EmitMetrics
+            Effect: Allow
+            Action: 'cloudwatch:PutMetricData'
+            Resource: '*'
+            Condition:
+              StringEquals:
+                'cloudwatch:namespace': AEGISNOVA/Operations
+
+  DlqDepthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub 'aegisnova-ops-${Stage}-dlq-not-empty'
+      AlarmDescription: 'Dead-letter queue has messages. Runbook: docs/OBSERVABILITY_AND_RUNBOOKS.md#runbook-dlq'
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions: [{Name: QueueName, Value: !GetAtt DeadLetterQueue.QueueName}]
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: !Ref DlqAlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If [HasAlarmTopic, [!Ref AlarmTopicArn], !Ref 'AWS::NoValue']
+
+  QueueDepthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub 'aegisnova-ops-${Stage}-queue-depth'
+      AlarmDescription: 'Work queue backlog. Runbook: docs/OBSERVABILITY_AND_RUNBOOKS.md#runbook-queue-backlog'
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions: [{Name: QueueName, Value: !GetAtt WorkQueue.QueueName}]
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 3
+      Threshold: !Ref QueueDepthAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If [HasAlarmTopic, [!Ref AlarmTopicArn], !Ref 'AWS::NoValue']
+
+  QueueAgeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub 'aegisnova-ops-${Stage}-queue-age'
+      AlarmDescription: 'Oldest work message is old. Runbook: docs/OBSERVABILITY_AND_RUNBOOKS.md#runbook-queue-backlog'
+      Namespace: AWS/SQS
+      MetricName: ApproximateAgeOfOldestMessage
+      Dimensions: [{Name: QueueName, Value: !GetAtt WorkQueue.QueueName}]
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 3
+      Threshold: !Ref QueueAgeAlarmSeconds
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If [HasAlarmTopic, [!Ref AlarmTopicArn], !Ref 'AWS::NoValue']
+
+  WorkerHeartbeatAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub 'aegisnova-ops-${Stage}-worker-heartbeat-stale'
+      AlarmDescription: 'Custom metric worker_heartbeat_age_s (emitted only by a real worker). Runbook: docs/OBSERVABILITY_AND_RUNBOOKS.md#runbook-worker-heartbeat'
+      Namespace: AEGISNOVA/Operations
+      MetricName: worker_heartbeat_age_s
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 3
+      Threshold: 30
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: breaching
+      AlarmActions: !If [HasAlarmTopic, [!Ref AlarmTopicArn], !Ref 'AWS::NoValue']
+
+Outputs:
+  WorkQueueUrl: {Value: !Ref WorkQueue}
+  DeadLetterQueueUrl: {Value: !Ref DeadLetterQueue}
+  StateMachineArn: {Value: !Ref GovernedActionStateMachine}
+  NotificationTopicArn: {Value: !Ref NotificationTopic}

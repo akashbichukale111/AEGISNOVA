@@ -1,0 +1,3 @@
+# Integration contract (FUTURE ONLY — nothing is integrated)
+Request `ira.assurance.request/1.0`: {repo, base_sha, patch (unified diff), claim{summary,tests_passed?,files?}, warrant?, warranty_days?}. Result `ira.assurance.result/1.0`: the run record (status, reason, identity, tests, breaker, audit, warrant, risk, proof, warranty_id). Proof `ira.repair.proof/1.0` (see PROOF_SCHEMA.md).
+A successful result authorizes nothing: no merge, deploy or repair execution. UNWIND remains the owner of approvals, audit lineage, revocation and consequential actions; its warrants would replace the local TEST-ONLY warrants via `IRA_WARRANT_KEY`/a verifier adapter (not built). Machine-readable JSON Schemas are NOT yet published — only the field lists above.

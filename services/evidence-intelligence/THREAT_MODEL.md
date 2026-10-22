@@ -1,0 +1,2 @@
+# Threat model
+Prompt injection via search content → treated as inert untrusted data, never executed or interpreted, rendered with textContent. XSS → no innerHTML, CSP `self`. SSRF → only fixed provider hosts fetched. Secret leakage → env only, redaction of errors, secrets never returned by API. DoS → 1 MB response cap, 64 KB request cap, timeouts, 3 workers, bounded results. Residual: server has no authentication (bind 127.0.0.1 only); SQLite file is unencrypted.

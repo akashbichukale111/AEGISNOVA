@@ -1,0 +1,9 @@
+[project]
+name = "aegisnova-causal-impact-intelligence"
+version = "0.1.0"
+description = "AEGISNOVA Workstream 03 - standalone Causal Impact Intelligence"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+causal-impact = "causal_impact.cli:main"

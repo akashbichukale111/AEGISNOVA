@@ -1,0 +1,6 @@
+# Evidence policy
+Authority: OSV/GHSA records are advisory evidence; Tavily results are discovery evidence only (UNRESOLVED until verified at the linked source). Score = relevance, never confidence.
+Reconciliation: aliases (CVE/GHSA/OSV ids) are grouped. Conflicts in fixed versions, severity, published date, package identity → CONFLICTING with original values preserved. OSV records with GHSA ids are mirrors of GitHub's origin and do not count as independent. Range syntaxes differ across providers: ranges comparison is NOT_EVALUATED; version applicability is evaluated only from OSV ECOSYSTEM/SEMVER numeric ranges, else NOT_EVALUATED. Result wording is IN_LISTED_RANGE / NOT_IN_LISTED_RANGES, never "safe".
+Freshness: based on age of last successful validation (defaults 24/72/168 h → FRESH/AGING/STALE/EXPIRED), plus DATE_UNKNOWN, CHANGED, SOURCE_UNAVAILABLE. Source dates are stored separately. NOT_REVALIDATED is defined but only emitted if a record lacks a validation timestamp.
+Quality: transparent rule-based indicator (0–100), not a probability.
+Diff: UNCHANGED / MATERIAL_CHANGE / SOURCE_UNAVAILABLE / UNCOMPARABLE. SOURCE_REMOVED is NOT implemented: removal is never confirmed, absent records are listed as `absent_in_latest`.

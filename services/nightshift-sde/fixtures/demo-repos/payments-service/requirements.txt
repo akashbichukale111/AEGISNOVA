@@ -1,0 +1,4 @@
+# DEMO FIXTURE
+acme-httpkit==1.2.0
+acme-yamlish==2.0.1
+colorlib==0.9.0

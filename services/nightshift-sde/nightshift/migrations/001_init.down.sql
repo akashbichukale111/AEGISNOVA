@@ -1,0 +1,25 @@
+-- Rollback of 001_init.sql. DESTRUCTIVE: removes all NightShift data. Triggers drop with their tables.
+DROP TABLE IF EXISTS workers;
+DROP TABLE IF EXISTS counters;
+DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS webhook_deliveries;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS provider_health;
+DROP TABLE IF EXISTS provider_calls;
+DROP TABLE IF EXISTS alerts;
+DROP TABLE IF EXISTS recovery_actions;
+DROP TABLE IF EXISTS artifacts;
+DROP TABLE IF EXISTS approvals;
+DROP TABLE IF EXISTS risk_assessments;
+DROP TABLE IF EXISTS evidence;
+DROP TABLE IF EXISTS finding_observations;
+DROP TABLE IF EXISTS findings;
+DROP TABLE IF EXISTS checkpoints;
+DROP TABLE IF EXISTS job_attempts;
+DROP TABLE IF EXISTS job_transitions;
+DROP TABLE IF EXISTS jobs;
+DROP TABLE IF EXISTS schedule_runs;
+DROP TABLE IF EXISTS schedules;
+DROP TABLE IF EXISTS policies;
+DROP TABLE IF EXISTS repo_snapshots;
+DROP TABLE IF EXISTS repositories;

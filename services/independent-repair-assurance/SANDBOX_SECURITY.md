@@ -1,0 +1,4 @@
+# Sandbox security
+Threat: an untrusted patch or repo tries to execute code, read host secrets, use the network or hang. 
+Implemented: command allowlist (patch cannot supply commands; `aegis.json`/`.env`/`.git`/`.github` paths forbidden); temp copy per run, removed in `finally`; env reduced to PATH/LANG (+HOME=tempdir); output cap 20 kB and secret redaction; CPU and file-size rlimits; wall-clock timeout with process-group SIGKILL; network namespace via `unshare -rn` when it works (reported in health/proof); no host mounts; no privileged mode.
+NOT implemented: container/VM isolation, memory/PID cgroup limits, filesystem confinement (a hostile test could read host files readable by the user). Therefore execution is opt-in (`IRA_ALLOW_LOCAL_EXEC=1`) and intended for trusted fixtures/operator-approved repos only. Do not run hostile code with this runner.

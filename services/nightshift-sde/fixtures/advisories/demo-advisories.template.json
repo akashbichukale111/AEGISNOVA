@@ -1,0 +1,75 @@
+{
+  "generated_at": "__NOW__",
+  "label": "DEMO FIXTURE \u2014 synthetic advisories for NightShift demonstration. Not real vulnerability data.",
+  "advisories": [
+    {
+      "id": "DEMO-2026-0001",
+      "ecosystem": "PyPI",
+      "package": "acme-httpkit",
+      "severity": "HIGH",
+      "summary": "Synthetic: header parsing flaw in acme-httpkit before 1.2.5.",
+      "url": "https://example.invalid/demo/DEMO-2026-0001",
+      "ranges": [
+        {
+          "introduced": "0",
+          "fixed": "1.2.5"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-2026-0002",
+      "ecosystem": "PyPI",
+      "package": "acme-yamlish",
+      "severity": "CRITICAL",
+      "summary": "Synthetic: unsafe deserialisation in acme-yamlish before 3.0.0.",
+      "url": "https://example.invalid/demo/DEMO-2026-0002",
+      "ranges": [
+        {
+          "introduced": "0",
+          "fixed": "3.0.0"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-2026-0003",
+      "ecosystem": "PyPI",
+      "package": "oldparse",
+      "severity": "MEDIUM",
+      "summary": "Synthetic: oldparse is unmaintained and affected; no fixed release exists.",
+      "url": "https://example.invalid/demo/DEMO-2026-0003",
+      "ranges": [
+        {
+          "introduced": "0"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-2026-0004",
+      "ecosystem": "PyPI",
+      "package": "confused-lib",
+      "severity": "HIGH",
+      "summary": "Synthetic: confused-lib 1.x affected (primary source says fixed in 1.4.0).",
+      "url": "https://example.invalid/demo/DEMO-2026-0004",
+      "ranges": [
+        {
+          "introduced": "1.0.0",
+          "fixed": "1.4.0"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-2026-0005",
+      "ecosystem": "npm",
+      "package": "acme-cartkit",
+      "severity": "HIGH",
+      "summary": "Synthetic: prototype pollution in acme-cartkit before 3.1.4.",
+      "url": "https://example.invalid/demo/DEMO-2026-0005",
+      "ranges": [
+        {
+          "introduced": "0.0.0",
+          "fixed": "3.1.4"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AEGISNOVA - Operations Control Plane</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+  <nav class="side" aria-label="Primary">
+    <div class="brand"><span class="logo" aria-hidden="true"></span><div><b>AEGISNOVA</b><small>A New Standard for Safe AI</small></div></div>
+    <ul id="nav">
+      <li><button data-view="overview" class="active">Operations Overview</button></li>
+      <li><button data-view="runs">Workflow Runs</button></li>
+      <li><button data-view="approvals">Approval Inbox</button></li>
+      <li><button data-view="notifications">Notifications</button></li>
+      <li><button data-view="queues">Queues &amp; Dead Letters</button></li>
+      <li><button data-view="reliability">Reliability &amp; Alerts</button></li>
+      <li><button data-view="events">Event Log</button></li>
+      <li><button data-view="settings">Settings / Integrations</button></li>
+    </ul>
+    <div class="tokenbox">
+      <label for="token">API token (dev)</label>
+      <input id="token" type="password" autocomplete="off" placeholder="paste from .local/dev-tokens.json">
+      <button id="saveToken" class="ghost">Use token</button>
+    </div>
+  </nav>
+  <div class="content">
+    <header class="top">
+      <div id="envBadge" class="badge env" role="status">...</div>
+      <div id="govBadge" class="badge warn" role="status"></div>
+      <button id="refresh" class="ghost" title="Reload current view">Refresh</button>
+    </header>
+    <main id="main" tabindex="-1"><p class="muted">Loading...</p></main>
+  </div>
+</div>
+<dialog id="dlg"><form method="dialog"><div id="dlgBody"></div><menu><button value="cancel" class="ghost">Cancel</button><button id="dlgOk" value="ok" class="danger">Confirm</button></menu></form></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="/app.js"></script>
+</body>
+</html>

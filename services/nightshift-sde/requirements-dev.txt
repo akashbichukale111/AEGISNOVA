@@ -1,0 +1,4 @@
+# Runtime has NO third-party dependencies (Python >= 3.11 standard library).
+pytest>=8
+# Optional, only for tests/test_ui_browser.py:
+# playwright>=1.45   (then: python -m playwright install chromium)

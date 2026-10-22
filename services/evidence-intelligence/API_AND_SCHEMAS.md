@@ -1,0 +1,5 @@
+# API & schemas
+POST `/api/v1/research` body `{ecosystem, package, version?, advisory_id?, sources?, max_results?}` → 201 bundle. GET `/api/v1/research/{id}`; POST `.../refresh`; GET `.../diff`; GET `.../export`; GET `/api/v1/evidence/{evidence_id}`; GET `/api/v1/providers/health`; GET `/api/v1/settings` (secrets shown only as set/not set); `/health`, `/ready`.
+Errors: 400 `{errors:[…]}`, 404, 413, 500 (redacted).
+Bundle `aegisnova.evidence-bundle/1`: research_id, mode (LIVE|DEMO_FIXTURES), request, identity, records[] (citation, evidence_id, provider, source_id, kind, url, title, publisher, ids, package, ranges, fixed_versions, severity, published, modified, retrieved_at, first_retrieved_at, last_validated_at, provider_score, content_hash, limitations, untrusted), citations, reconciliation{overall, groups[]}, freshness, diff, providers, quality{dimensions, indicator}, snapshot_hash, snapshot_seq, limitations, recommended_next_action. Export wraps it as `aegisnova.evidence-export/1`.
+Provider statuses: OK, EMPTY, NOT_CONFIGURED, AUTH_ERROR, RATE_LIMITED, TIMEOUT, ERROR.

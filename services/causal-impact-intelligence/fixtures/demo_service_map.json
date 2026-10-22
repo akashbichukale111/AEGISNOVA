@@ -1,0 +1,19 @@
+{"schema_version": "1", "demo": true,
+ "_label": "DEMO FIXTURE - illustrative only; not facts about any real repository or environment.",
+ "nodes": [
+  {"id": "svc:web-frontend", "type": "service", "name": "web-frontend", "environment": "production", "criticality": "high", "owner": "team-web"},
+  {"id": "svc:checkout-api", "type": "service", "name": "checkout-api", "environment": "production", "criticality": "critical", "owner": "team-payments", "version": "2.4.1"},
+  {"id": "svc:inventory-api", "type": "service", "name": "inventory-api", "environment": "production", "criticality": "medium", "owner": "team-supply"},
+  {"id": "svc:notifier", "type": "service", "name": "notifier", "environment": "staging"},
+  {"id": "svc:auth", "type": "service", "name": "auth-service", "environment": "production", "criticality": "critical", "version": "1.9.0"},
+  {"id": "db:orders", "type": "datastore", "name": "orders-db", "environment": "production"},
+  {"id": "lib:payments-sdk", "type": "package", "name": "payments-sdk", "version": "3.2.0", "ecosystem": "npm"},
+  {"id": "svc:orphan-batch", "type": "service", "name": "orphan-batch", "environment": "staging"}],
+ "edges": [
+  {"source": "svc:web-frontend", "type": "CALLS", "target": "svc:checkout-api", "rationale": "demo"},
+  {"source": "svc:web-frontend", "type": "CALLS", "target": "svc:auth"},
+  {"source": "svc:checkout-api", "type": "CALLS", "target": "svc:inventory-api"},
+  {"source": "svc:checkout-api", "type": "CALLS", "target": "svc:auth"},
+  {"source": "svc:checkout-api", "type": "DEPENDS_ON", "target": "lib:payments-sdk"},
+  {"source": "svc:checkout-api", "type": "CONSUMES", "target": "db:orders"},
+  {"source": "svc:notifier", "type": "CALLS", "target": "svc:checkout-api", "class": "inferred", "rationale": "inferred from log correlation (demo)"}]}

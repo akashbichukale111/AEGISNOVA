@@ -1,0 +1,14 @@
+[project]
+name = "nightshift-sde"
+version = "0.1.0"
+description = "NightShift SDE — standalone autonomous repository-engineering engine (AEGISNOVA internal capability)"
+requires-python = ">=3.11"
+dependencies = []          # runtime is Python standard library only
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+e2e = ["playwright>=1.45"]  # optional: browser UI tests (tests/test_ui_browser.py is skipped without it)
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]       # fixtures/demo-repos contain their own tests; they are run only inside the sandbox
+addopts = "-p no:cacheprovider"

@@ -1,0 +1,14 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AEGISNOVA · Evidence Intelligence</title><link rel="stylesheet" href="/style.css"></head><body>
+<header><div class="brand"><span class="dot"></span>AEGISNOVA <small>Evidence Intelligence</small></div><div id="mode" class="pill"></div></header>
+<nav role="tablist"><button data-t="work" class="on">Workspace</button><button data-t="cf">Conflicts &amp; Freshness</button><button data-t="prov">Provider Health</button><button data-t="set">Settings</button></nav>
+<main>
+<section id="work" class="tab on"><form id="f"><label>Ecosystem<select id="eco"><option>PyPI</option><option>npm</option><option>crates.io</option><option>Go</option><option>Maven</option><option>RubyGems</option><option>NuGet</option></select></label>
+<label>Package<input id="pkg" autocomplete="off" placeholder="e.g. demo-lib"></label><label>Version<input id="ver" autocomplete="off" placeholder="e.g. 1.1.0"></label>
+<label>Advisory ID<input id="adv" autocomplete="off" placeholder="CVE-… or GHSA-…"></label>
+<fieldset><legend>Sources</legend><label class="c"><input type="checkbox" id="s_tavily" checked> Tavily</label><label class="c"><input type="checkbox" id="s_osv" checked> OSV</label><label class="c"><input type="checkbox" id="s_ghsa" checked> GHSA</label></fieldset>
+<div class="row"><button class="primary" type="submit">Research</button><button type="button" id="refresh" disabled>Refresh</button><a id="export" class="btn" hidden>Export JSON</a></div></form>
+<div id="msg" role="status" aria-live="polite" class="note">Enter a package or an advisory ID. No result ever means “safe”.</div><div id="res"></div></section>
+<section id="cf" class="tab"><div id="cfv" class="note">Run research first.</div></section>
+<section id="prov" class="tab"><div id="provv"></div></section><section id="set" class="tab"><div id="setv"></div></section></main>
+<script src="/app.js"></script></body></html>

@@ -1,0 +1,2 @@
+# Architecture
+`core.py`: validation → provider adapters (`p_tavily`, `p_osv`, `p_ghsa`, thread pool, injectable `http`) → normalized records (hash, citation) → `reconcile` → `freshness` → `diff` → `quality` → versioned bundle. `Service` persists every snapshot in SQLite (`research`, `snapshots`; created on start). `server.py` exposes the REST API and static UI (`static/`, CSP `self` only). `fixtures.py` provides fictional offline HTTP used by tests and `EI_MODE=demo`. The clock is injectable. No user-supplied URL is ever fetched (no SSRF surface).

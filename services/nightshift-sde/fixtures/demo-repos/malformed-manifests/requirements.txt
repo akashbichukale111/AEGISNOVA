@@ -1,0 +1,4 @@
+# DEMO FIXTURE
+this is ((not a requirement
+acme-httpkit>=1.0
+-e git+https://example.invalid/x.git#egg=x

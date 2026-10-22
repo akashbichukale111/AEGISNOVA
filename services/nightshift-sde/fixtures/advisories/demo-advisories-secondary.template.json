@@ -1,0 +1,20 @@
+{
+  "generated_at": "__NOW__",
+  "label": "DEMO FIXTURE (secondary source) \u2014 synthetic; deliberately disagrees with the primary source on one package.",
+  "advisories": [
+    {
+      "id": "DEMO-2026-0004",
+      "ecosystem": "PyPI",
+      "package": "confused-lib",
+      "severity": "HIGH",
+      "summary": "Synthetic: same issue, but this source says fixed in 1.6.0.",
+      "url": "https://example.invalid/demo-secondary/DEMO-2026-0004",
+      "ranges": [
+        {
+          "introduced": "1.0.0",
+          "fixed": "1.6.0"
+        }
+      ]
+    }
+  ]
+}

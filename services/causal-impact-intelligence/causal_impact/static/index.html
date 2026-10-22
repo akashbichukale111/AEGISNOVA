@@ -1,0 +1,80 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AEGISNOVA - Causal Impact Intelligence</title>
+<style>
+:root{--bg:#0e1116;--panel:#161b22;--line:#262d38;--tx:#e6edf3;--mut:#8b96a5;--ac:#38bdf8;--ac2:#2563eb;--bad:#f87171;--warn:#fbbf24;--ok:#34d399}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,Segoe UI,sans-serif}
+header{display:flex;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+h1{font-size:16px;margin:0;letter-spacing:.08em}h1 span{color:var(--ac)}.sub{color:var(--mut);font-size:12px}
+button,select,input,textarea{background:#0b0f14;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font:inherit}
+button{cursor:pointer;background:linear-gradient(#1f6feb,var(--ac2));border:0}button.sec{background:#1c232d;border:1px solid var(--line)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ac)}
+nav{display:flex;gap:4px;padding:8px 16px;flex-wrap:wrap}nav button{background:#1c232d;border:1px solid var(--line)}nav button.on{background:var(--ac2)}
+main{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:12px;padding:0 16px 16px}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;max-height:78vh}
+svg{width:100%;height:68vh;background:#0b0f14;border-radius:8px;cursor:grab}
+.tag{display:inline-block;padding:1px 7px;border-radius:99px;font-size:11px;border:1px solid var(--line);margin-right:4px}
+.OBSERVED,.observed,.SUPPORTED_HYPOTHESIS,.LOW{color:var(--ok)}.inferred,.CONTRADICTED,.CRITICAL,.HIGH{color:var(--bad)}.user_supplied,.PLAUSIBLE,.MODERATE,.NEEDS_MORE_EVIDENCE,.UNKNOWN,.INCONCLUSIVE{color:var(--warn)}
+pre{white-space:pre-wrap;word-break:break-word;background:#0b0f14;padding:8px;border-radius:6px;font-size:12px}
+.pane{display:none}.pane.on{display:block}.row{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}small,.mut{color:var(--mut)}
+.banner{background:#1c2a3a;border:1px solid var(--ac2);padding:6px 10px;border-radius:6px;margin:0 16px 8px;display:none}
+</style></head><body>
+<header><h1>AEGIS<span>NOVA</span> &middot; Causal Impact Intelligence</h1><span class="sub">Workstream 03 - standalone &middot; reachability is not causation</span>
+<span style="flex:1"></span><button id="demo">Load demo fixture</button><label class="sec"><input type="file" id="files" multiple aria-label="Upload input files"></label><button id="imp" class="sec">Import selected files</button></header>
+<div class="banner" id="banner" role="status"></div>
+<nav id="tabs"></nav>
+<main><div class="card"><div class="row"><input id="q" placeholder="Search nodes..." aria-label="Search nodes"><select id="fenv" aria-label="Environment filter"><option value="">all envs</option></select></div>
+<svg id="g" role="img" aria-label="Dependency graph"></svg><small>Drag to pan, wheel to zoom, click a node. Edge colours: observed / user-supplied / inferred(dashed).</small></div>
+<div class="card" id="side"></div></main>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const api=async(m,p,b)=>{const r=await fetch('/api/v1/'+p,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});const j=await r.json();if(!r.ok)throw new Error((j.error||'ERR')+': '+(j.message||''));return j};
+let G=null,sel=null,view={x:0,y:0,k:1},last=null,pos={};const TABS=['Explorer','Incident','Root cause','Impact','Counterfactual','Evidence','Export','Health'];
+let tab='Explorer';$('#tabs').innerHTML=TABS.map(t=>`<button data-t="${t}">${t}</button>`).join('');
+$('#tabs').onclick=e=>{if(e.target.dataset.t){tab=e.target.dataset.t;render()}};
+const note=(m,bad)=>{const b=$('#banner');b.style.display='block';b.textContent=m;b.style.borderColor=bad?'var(--bad)':'var(--ac2)'};
+const guard=f=>async(...a)=>{try{await f(...a)}catch(e){note(e.message,true)}};
+async function refresh(){G=await api('GET','graph');layout();const envs=[...new Set(G.nodes.map(n=>n.attrs.environment).filter(Boolean))];$('#fenv').innerHTML='<option value="">all envs</option>'+envs.map(e=>`<option>${esc(e)}</option>`).join('');draw();render()}
+$('#demo').onclick=guard(async()=>{const r=await api('POST','demo');note(r.label);await refresh()});
+$('#imp').onclick=guard(async()=>{const fs=[...$('#files').files];if(!fs.length)throw new Error('choose files first');const files=[],inc=[];
+ for(const f of fs){const t=await f.text();if(/incident/i.test(f.name))inc.push(t);else files.push({name:f.name,content:t})}
+ const r=await api('POST','import',{files,incident:inc[0]});note('Imported: '+r.formats.map(x=>x.format).join(', '));await refresh()});
+function layout(){pos={};const n=G.nodes.length;G.nodes.forEach((x,i)=>{const a=2*Math.PI*i/n;pos[x.node_id]={x:300*Math.cos(a)+Math.random()*20,y:300*Math.sin(a)+Math.random()*20,vx:0,vy:0}});
+ for(let it=0;it<250;it++){const ids=Object.keys(pos);for(const a of ids)for(const b of ids){if(a>=b)continue;const p=pos[a],q=pos[b];let dx=p.x-q.x,dy=p.y-q.y,d=Math.hypot(dx,dy)||1,f=2400/(d*d);p.vx+=dx/d*f;p.vy+=dy/d*f;q.vx-=dx/d*f;q.vy-=dy/d*f}
+ for(const e of G.edges){const p=pos[e.source_node_id],q=pos[e.target_node_id];if(!p||!q)continue;let dx=q.x-p.x,dy=q.y-p.y,d=Math.hypot(dx,dy)||1,f=(d-110)*.02;p.vx+=dx/d*f;p.vy+=dy/d*f;q.vx-=dx/d*f;q.vy-=dy/d*f}
+ for(const k of ids){const p=pos[k];p.x+=p.vx*.5-p.x*.002;p.y+=p.vy*.5-p.y*.002;p.vx*=.6;p.vy*=.6}}}
+function draw(hl={}){if(!G)return;const q=$('#q').value.toLowerCase(),env=$('#fenv').value,svg=$('#g');
+ const vis=n=>(!q||(n.name+n.node_id).toLowerCase().includes(q))&&(!env||n.attrs.environment===env);
+ const col={observed:'#34d399',user_supplied:'#38bdf8',inferred:'#fbbf24'};
+ let h=`<defs><marker id="ar" viewBox="0 0 10 10" refX="14" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8b96a5"/></marker></defs><g transform="translate(${view.x+450},${view.y+300}) scale(${view.k})">`;
+ for(const e of G.edges){const p=pos[e.source_node_id],t=pos[e.target_node_id];if(!p||!t)continue;h+=`<line x1="${p.x}" y1="${p.y}" x2="${t.x}" y2="${t.y}" stroke="${col[e.class]}" stroke-width="${hl[e.edge_id]?3:1.2}" ${e.class==='inferred'?'stroke-dasharray="5 4"':''} marker-end="url(#ar)" opacity="${hl[e.edge_id]?1:.6}"><title>${esc(e.source_node_id)} ${esc(e.edge_type)} ${esc(e.target_node_id)} (${esc(e.class)})</title></line>`}
+ for(const n of G.nodes){const p=pos[n.node_id],v=vis(n);const r=n.node_type==='package'?6:9;h+=`<g data-id="${esc(n.node_id)}" opacity="${v?1:.15}" style="cursor:pointer"><circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${n.node_id===sel?'#38bdf8':n.node_type==='package'?'#475569':'#2563eb'}" stroke="${hl[n.node_id]?'#f87171':'#0b0f14'}" stroke-width="3"/><text x="${p.x+r+3}" y="${p.y+4}" fill="#e6edf3" font-size="11">${esc(n.name)}</text></g>`}
+ svg.innerHTML=h+'</g>'}
+$('#q').oninput=()=>draw();$('#fenv').onchange=()=>draw();
+const svg=$('#g');svg.onclick=guard(async e=>{const g=e.target.closest('[data-id]');if(g){sel=g.dataset.id;draw();tab='Explorer';await render()}});
+let drag=null;svg.onmousedown=e=>drag={x:e.clientX-view.x,y:e.clientY-view.y};window.onmouseup=()=>drag=null;window.onmousemove=e=>{if(drag){view.x=e.clientX-drag.x;view.y=e.clientY-drag.y;draw()}};
+svg.onwheel=e=>{e.preventDefault();view.k=Math.min(3,Math.max(.3,view.k*(e.deltaY<0?1.1:.9)));draw()};
+const tbl=(rows,cols)=>'<table style="width:100%;border-collapse:collapse">'+'<tr>'+cols.map(c=>`<th align="left">${esc(c)}</th>`).join('')+'</tr>'+rows.map(r=>'<tr>'+r.map(c=>`<td>${c}</td>`).join('')+'</tr>').join('')+'</table>';
+const path=p=>p.length?p.map(e=>`${esc(e.source)} <small>${esc(e.type)}</small> ${esc(e.target)}`).join(' &rarr; '):'<small>(self)</small>';
+async function render(){document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));const s=$('#side');
+ if(tab==='Health'){const h=await api('GET','health');s.innerHTML=`<h3>Provider / input health</h3><pre>${esc(JSON.stringify(h,null,2))}</pre>`;return}
+ if(!G){s.innerHTML='<h3>No graph loaded</h3><p class="mut">Load the demo fixture (clearly labelled illustrative data) or import package.json / package-lock.json / requirements.txt / pyproject.toml / service-map JSON plus an incident JSON.</p>';return}
+ if(tab==='Explorer'){if(!sel){s.innerHTML=`<h3>Graph</h3><p>${G.nodes.length} nodes, ${G.edges.length} edges. Click a node.</p><h4>Validation</h4>`+G.validation.slice(0,40).map(i=>`<div><span class="tag ${esc(i.level)}">${esc(i.level)}</span>${esc(i.code)}: ${esc(i.message)}</div>`).join('');return}
+  const d=await api('GET','node/'+encodeURIComponent(sel)),n=d.node;s.innerHTML=`<h3>${esc(n.name)}</h3><div><span class="tag">${esc(n.node_type)}</span><span class="tag ${esc(n.class)}">${esc(n.class)}</span>${n.attrs.demo_fixture?'<span class="tag">DEMO</span>':''}</div><pre>${esc(JSON.stringify({id:n.node_id,version:n.version||'unknown',ecosystem:n.ecosystem,attrs:n.attrs,provenance:n.provenance_all},null,1))}</pre>
+  <h4>Upstream (depends on)</h4>${d.upstream.map(u=>`<div>${esc(u.node_id)} <small>depth ${u.depth}</small><br><small>${path(u.path)}</small></div>`).join('')||'<small>none</small>'}
+  <h4>Downstream (impacted if it fails)</h4>${d.downstream.map(u=>`<div>${esc(u.node_id)} <small>depth ${u.depth}</small><br><small>${path(u.path)}</small></div>`).join('')||'<small>none</small>'}`;return}
+ if(tab==='Incident'){const i=G.incident||{};s.innerHTML=`<h3>Incident workspace</h3><textarea id="inc" rows="16" style="width:100%">${esc(JSON.stringify(i,null,2))}</textarea><div class="row"><button id="si">Save incident</button><button id="run" class="sec">Run analysis</button></div><small>Fields: timestamp (ISO-8601), affected_component (node id), symptoms[], events[], advisories[], window_hours.</small>`;
+  $('#si').onclick=guard(async()=>{await api('POST','incident',{incident:JSON.parse($('#inc').value)});note('Incident saved');await refresh()});$('#run').onclick=guard(async()=>{await analyze();tab='Root cause';render()});return}
+ if(!last&&['Root cause','Impact','Evidence','Export','Counterfactual'].includes(tab)){s.innerHTML='<p>Running analysis...</p>';try{await analyze()}catch(e){s.innerHTML=`<p class="CRITICAL">${esc(e.message)}</p><p class="mut">Provide a valid incident in the Incident tab first.</p>`;return}}
+ if(tab==='Root cause'){const r=last.root_cause;s.innerHTML=`<h3>Root-cause hypotheses <span class="tag ${esc(r.overall_status)}">${esc(r.overall_status)}</span></h3><p class="mut">${esc(r.caveat)}</p>`+r.candidates.map(c=>`<div class="card" style="max-height:none;margin:6px 0"><b>#${c.rank} ${esc(c.component_id)}</b> <span class="tag ${esc(c.status)}">${esc(c.status)}</span><span class="tag">confidence band: ${esc(c.confidence_band)}</span><br><small>${esc(c.confidence_rationale)}</small><br>Path: <small>${path(c.path_to_symptom)}</small>${c.contradicting.map(x=>`<div class="CONTRADICTED">&#10007; ${esc(x)}</div>`).join('')}${c.missing_evidence.map(x=>`<div class="mut">? ${esc(x)}</div>`).join('')}<div>Alternatives: ${c.alternatives.map(esc).join(', ')||'none'}</div><div>Next check: ${esc(c.next_diagnostic_check)}</div></div>`).join('');return}
+ if(tab==='Impact'){const b=last.blast_radius,im=last.impact;s.innerHTML=`<h3>Blast radius <span class="tag ${esc(b.level)}">${esc(b.level)}</span></h3><small>Target: ${esc(last.impact_target)}</small><ul>${b.rationale.map(r=>`<li>${esc(r)}</li>`).join('')}</ul><pre>${esc(JSON.stringify(b.dimensions,null,1))}</pre><p class="mut">${esc(b.note||'')}</p>`+tbl(im.affected.map(a=>[esc(a.node_id),esc(a.relation),a.depth,esc(a.environment),esc(a.criticality),'<small>'+path(a.path)+'</small>']),['Node','Relation','Depth','Env','Criticality','Shortest path']);
+  const hl={};im.affected.forEach(a=>{hl[a.node_id]=1;a.path.forEach(e=>hl[e.edge_id]=1)});draw(hl);return}
+ if(tab==='Counterfactual'){s.innerHTML=`<h3>Counterfactual lab</h3><div class="row"><select id="ct"><option>remove_node</option><option>remove_edge</option><option>isolate_node</option><option>upgrade_version</option><option>remove_root_cause</option><option>shift_incident</option></select><input id="cn" placeholder="node_id (or edge_id)" value="${esc(sel||'')}" style="flex:1"><input id="cv" placeholder="new_version / timestamp"></div><button id="cr">Evaluate (graph copy only)</button><div id="co"></div>`;
+  $('#cr').onclick=guard(async()=>{const t=$('#ct').value,v=$('#cn').value,x=$('#cv').value;const sc={type:t};if(t==='remove_edge')sc.edge_id=v;else sc.node_id=v;if(t==='upgrade_version')sc.new_version=x;if(t==='shift_incident'&&x)sc.timestamp=x;
+   const r=await api('POST','counterfactual',{scenario:sc});$('#co').innerHTML=`<h4>${esc(r.status)}</h4><small>scenario ${esc(r.scenario_hash)} | baseline graph ${esc(r.baseline_graph_hash)} (unchanged)</small>`+(r.status!=='OK'?`<p class="WARN">${esc(r.reason)}</p>`:`<pre>${esc(JSON.stringify(r.delta,null,1))}</pre><b>Assumptions</b><ul>${r.assumptions.map(a=>`<li>${esc(a)}</li>`).join('')}</ul><b>Deterministic</b><ul>${r.deterministic_consequences.map(a=>`<li>${esc(a)}</li>`).join('')}</ul><b>Speculative</b><ul>${r.speculative.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>`)});return}
+ if(tab==='Evidence'){const l=x=>x.map(i=>`<li>${esc(i)}</li>`).join('');s.innerHTML=`<h3>Evidence &amp; uncertainty</h3><b>Known (observed/supplied)</b><ul>${l(last.known)}</ul><b>Inferred</b><ul>${l(last.inferred)||'<li>none</li>'}</ul><b>Unknown</b><ul>${l(last.unknown)}</ul><b>Warnings</b><ul>${l(last.warnings)||'<li>none</li>'}</ul><b>Limitations</b><ul>${l(last.limitations)}</ul><pre>${esc(JSON.stringify(last.graph_coverage,null,1))}</pre>`;return}
+ if(tab==='Export'){s.innerHTML=`<h3>Export</h3><div class="row"><button id="ej">JSON</button><button id="em" class="sec">Markdown report</button></div><pre id="eo"></pre>`;
+  const go=f=>guard(async()=>{const r=await api('POST','export',{format:f});$('#eo').textContent=r.content;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([r.content]));a.download='impact-report.'+(f==='json'?'json':'md');a.click()});$('#ej').onclick=go('json');$('#em').onclick=go('markdown');return}}
+async function analyze(){last=await api('POST','analyze',{node_id:undefined})}
+render();api('GET','graph').then(()=>refresh()).catch(()=>{});
+</script></body></html>

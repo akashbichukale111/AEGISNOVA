@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "1.0.0",
+  "manifestHash": "8f4b23c91a0d3e5f76b89c0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c",
+  "runId": "RUN-ENG-2026-001",
+  "repoId": "demo/payments-service",
+  "issueId": "ISSUE-PCPR-01",
+  "timestamp": "2026-10-22T13:20:00Z",
+  "modelUsed": "nvidia/nemotron-4-340b-instruct (TensorRT-LLM FP8)",
+  "diffHash": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+  "changedFiles": [
+    {
+      "path": "app/__init__.py",
+      "originalHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "patchedHash": "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
+      "additions": 5,
+      "deletions": 1,
+      "diff": "--- a/app/__init__.py\\n+++ b/app/__init__.py\\n@@ -1,4 +1,8 @@\\n \"\"\"Demo application (DEMO FIXTURE).\"\"\"\\n \\n def version():\\n-    return \"1.0\"\\n+    # Patched by AEGISNOVA Autonomous Engineering (Nemotron-4 / NVIDIA NIM)\\n+    # Parameterized safe interface\\n+    return \"1.1-safe\"\\n+\\n+def execute_safe_query(db, user_id):\\n+    return db.execute(\"SELECT * FROM users WHERE id = :id\", {\"id\": user_id})"
+    }
+  ],
+  "commandExecutions": [
+    {
+      "command": "python",
+      "args": ["-m", "unittest", "discover", "-s", "tests"],
+      "cwd": "services/nightshift-sde/fixtures/demo-repos/payments-service",
+      "exitCode": 0,
+      "durationMs": 340,
+      "stdout": "Ran 2 tests in 0.014s\\n\\nOK\\n",
+      "stderr": "",
+      "timedOut": false,
+      "timestamp": "2026-10-22T13:20:04Z"
+    }
+  ],
+  "testResults": {
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "durationSeconds": 0.34,
+    "failures": []
+  },
+  "securityFindings": [
+    {
+      "ruleId": "CWE-89",
+      "title": "SQL Injection Parameterization Verified",
+      "severity": "INFORMATIONAL",
+      "filePath": "app/__init__.py",
+      "lineNumber": 7,
+      "remediated": true,
+      "confidence": 0.99
+    }
+  ],
+  "evidenceSources": [
+    {
+      "source": "GHSA",
+      "referenceId": "GHSA-76wf-9vgp-26fc",
+      "summary": "HTTP request smuggling and query parameter boundaries",
+      "url": "https://github.com/advisories/GHSA-76wf-9vgp-26fc",
+      "retrievedAt": "2026-10-22T13:20:02Z",
+      "isFresh": true
+    }
+  ],
+  "impactAnalysis": {
+    "targetComponent": "payments-service:app/__init__.py",
+    "directDependents": ["orders-service", "billing-worker"],
+    "blastRadiusPercent": 18.5,
+    "confidenceScore": 0.984,
+    "counterfactualOutcome": "Patch isolated to internal DB helper; downstream contract signatures remain 100% backward compatible."
+  },
+  "verifierVerdict": "PASS",
+  "verifierFindings": [
+    {
+      "category": "CORRECTNESS",
+      "severity": "LOW",
+      "filePath": "app/__init__.py",
+      "lineNumber": 7,
+      "observation": "Query parameter dictionary matches expected SQLite named binding convention.",
+      "blocking": false
+    }
+  ],
+  "governanceDecision": {
+    "approvalId": "APPR-ENG-2026-001",
+    "decidedBy": "operator:unwind-countersignature",
+    "decision": "APPROVED",
+    "timestamp": "2026-10-22T13:20:06Z",
+    "warrantDebitedBp": 150,
+    "warrantBalanceRemainingBp": 1300,
+    "reason": "Autonomous code patch verified by tests, DevGuard AST scan, and Independent Verifier.",
+    "lineageHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "pullRequestResult": {
+    "status": "LOCAL_PATCH_ONLY",
+    "branchName": "local/patch-run-eng-2026-001",
+    "commitHash": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0",
+    "explanation": "GITHUB NOT CONNECTED [LOCAL DEMO]: GITHUB_TOKEN not configured. Verifiable local patch and Proof-Carrying manifest package generated cleanly."
+  },
+  "residualRisks": [
+    {
+      "category": "RUNTIME_COMPATIBILITY",
+      "riskDescription": "Local Python 3.13 environment verified; target production container uses Python 3.11 LTS.",
+      "mitigation": "Standard library syntax chosen strictly compatible across Python 3.10 through 3.13.",
+      "operatorAccepted": true
+    }
+  ],
+  "unwindWarrantDebitBp": 150
+}

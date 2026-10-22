@@ -1,0 +1,7 @@
+{"incident_id": "demo-inc-001", "timestamp": "2026-03-10T12:00:00Z", "affected_component": "svc:web-frontend", "window_hours": 24,
+ "symptoms": ["checkout page returns HTTP 502 for ~30% of requests"],
+ "events": [
+  {"event_id": "ev-1", "timestamp": "2026-03-10T09:30:00Z", "component": "lib:payments-sdk", "type": "change", "description": "payments-sdk 3.1.0 -> 3.2.0 (demo)"},
+  {"event_id": "ev-2", "timestamp": "2026-03-10T11:40:00Z", "component": "svc:checkout-api", "type": "health", "description": "error rate rising (demo)"},
+  {"event_id": "ev-3", "timestamp": "2026-03-10T13:00:00Z", "component": "svc:auth", "type": "deploy", "description": "deploy after incident (demo)"}],
+ "advisories": [{"id": "DEMO-ADV-1", "component": "lib:payments-sdk", "affected_versions": ["3.2.0"], "summary": "illustrative advisory"}]}

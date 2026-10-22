@@ -1,0 +1,8 @@
+{
+  "name": "node-storefront",
+  "version": "1.0.0",
+  "dependencies": {
+    "acme-cartkit": "^3.1.0",
+    "leftish": "1.0.0"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "Comment": "AEGISNOVA governed action workflow (Standard). NOT DEPLOYED. Mirrors local steps: START, VALIDATE, WAITING_FOR_APPROVAL, EXECUTE_SAFE_ACTION, NOTIFY, COMPLETE.",
+  "StartAt": "START",
+  "TimeoutSeconds": 604800,
+  "States": {
+    "START": {"Type": "Pass", "Next": "VALIDATE"},
+    "VALIDATE": {
+      "Type": "Choice",
+      "Choices": [{"Variable": "$.requires_approval", "BooleanEquals": true, "Next": "WAITING_FOR_APPROVAL"}],
+      "Default": "EXECUTE_SAFE_ACTION"
+    },
+    "WAITING_FOR_APPROVAL": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sqs:sendMessage.waitForTaskToken",
+      "Parameters": {
+        "QueueUrl": "${ApprovalQueueUrl}",
+        "MessageBody": {"run_id.$": "$.run_id", "correlation_id.$": "$.correlation_id", "task_token.$": "$$.Task.Token"}
+      },
+      "TimeoutSeconds": 86400,
+      "ResultPath": "$.approval",
+      "Catch": [{"ErrorEquals": ["States.Timeout", "States.TaskFailed"], "ResultPath": "$.error", "Next": "FAILED"}],
+      "Next": "EXECUTE_SAFE_ACTION"
+    },
+    "EXECUTE_SAFE_ACTION": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sqs:sendMessage.waitForTaskToken",
+      "Parameters": {
+        "QueueUrl": "${WorkQueueUrl}",
+        "MessageBody": {"run_id.$": "$.run_id", "kind": "step", "task_token.$": "$$.Task.Token"}
+      },
+      "TimeoutSeconds": 300,
+      "Retry": [{"ErrorEquals": ["States.Timeout", "TransientError"], "IntervalSeconds": 2, "BackoffRate": 2.0, "MaxAttempts": 3, "JitterStrategy": "FULL"}],
+      "Catch": [{"ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "FAILED"}],
+      "ResultPath": "$.execution",
+      "Next": "NOTIFY"
+    },
+    "NOTIFY": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sqs:sendMessage",
+      "Parameters": {"QueueUrl": "${NotifyQueueUrl}", "MessageBody": {"run_id.$": "$.run_id", "template": "workflow.completed"}},
+      "ResultPath": null,
+      "Next": "COMPLETE"
+    },
+    "COMPLETE": {"Type": "Succeed"},
+    "FAILED": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sqs:sendMessage",
+      "Parameters": {"QueueUrl": "${DeadLetterQueueUrl}", "MessageBody": {"run_id.$": "$.run_id", "error.$": "$.error"}},
+      "Next": "FAILED_TERMINAL"
+    },
+    "FAILED_TERMINAL": {"Type": "Fail", "Error": "WorkflowFailed", "Cause": "See dead-letter queue and run timeline"}
+  }
+}

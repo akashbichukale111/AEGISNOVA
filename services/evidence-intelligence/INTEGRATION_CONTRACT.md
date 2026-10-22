@@ -1,0 +1,2 @@
+# Integration contract (future, no merge)
+AEGISNOVA risk engine, repair workflow and UNWIND Governance Core may consume the `aegisnova.evidence-bundle/1` JSON over the REST API. Consumers must honour `reconciliation.overall`, `freshness.overall`, `limitations` and `recommended_next_action`, and must not treat empty results as safe. This service makes no approval decisions and executes no repairs. Schema changes bump the version suffix.

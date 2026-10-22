@@ -1,0 +1,7 @@
+# Graph schema (v1)
+**Node:** `node_id` (stable; `pkg:<eco>/<name>[@exact-version]` or user id), `node_type` (service|application|package|component|infrastructure|datastore|unknown), `name`, `version` (null if not exact), `ecosystem`, `class` (observed|user_supplied|inferred), `provenance` {source, location, input_sha256}, `provenance_all`, `attrs` (environment/criticality/owner ONLY if supplied; `version_spec`; `demo_fixture`).
+**Edge:** `edge_id` (= sha256 of source|type|target, 12 hex), `source_node_id`, `target_node_id`, `edge_type`, `direction`, `class`, `rationale`, `provenance`, `attrs.dep_kind` (runtime|dev|optional|peer).
+**Types & impact semantics:** DEPENDS_ON, IMPORTS, CALLS, DEPLOYED_IN, RUNS_ON, CONSUMES: *source depends on target* (impact flows target->source). PRODUCES, AFFECTS: impact flows source->target. OBSERVED_BEFORE: temporal only, never carries impact.
+**Service map JSON:** `{"schema_version":"1","nodes":[{id,type,name,version?,environment?,criticality?(low|medium|high|critical),owner?}],"edges":[{source,target,type,class?,rationale?,dep_kind?}]}`.
+**Manifest edges are `observed`** (declared in the file). Service-map edges default to `user_supplied`. Nothing is auto-inferred.
+**Limitations:** manifest `DEPENDS_ON` is declared, not runtime-verified; semver ranges leave version unknown; lockfile dedup/hoisting resolved by nested `node_modules` lookup only; cycles are allowed (reported as info; traversal uses visited sets); caps: depth 6 and 500 nodes by default, 20k nodes / 100k edges hard limits.
