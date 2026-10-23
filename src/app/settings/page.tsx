@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Settings, ShieldCheck, Cpu, Database, Cloud, Lock, Server, Zap } from "lucide-react";
+import { Settings, ShieldCheck, Cpu, Database, Cloud, Lock, Server, Zap, Globe } from "lucide-react";
 import { Card, CardHeader } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -83,6 +83,17 @@ export default function SettingsPage() {
                 <div className="text-cyan-400/80 text-[10px]">Token Authenticated • nvidia/Nemotron-3_5-Lightning • Hopper GH100</div>
               </div>
               <Badge variant="connected">KEY CONFIGURED</Badge>
+            </div>
+
+            <div className="p-3 rounded-lg bg-indigo-950/20 border border-indigo-800/40 flex items-center justify-between">
+              <div>
+                <div className="text-white font-semibold flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-indigo-400" />
+                  Tavily AI Evidence Search (Workstream 02)
+                </div>
+                <div className="text-indigo-400/80 text-[10px]">Token Connected • 300,000 Credits • Advanced Security Citations</div>
+              </div>
+              <Badge variant="connected">LIVE RESEARCH</Badge>
             </div>
 
             <div className="p-3 rounded-lg bg-emerald-950/20 border border-emerald-800/40 flex items-center justify-between">

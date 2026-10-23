@@ -91,6 +91,8 @@ const coreModules = [
   "src/app/api/repo-intelligence/audit/route.ts",
   "src/app/api/engineering/run/route.ts",
   "src/app/api/engineering/status/route.ts",
+  "src/app/api/evidence/search/route.ts",
+  "src/lib/evidence/tavily.ts",
   "src/lib/github/client.ts",
   "src/lib/repo-intelligence/analyzer.ts",
   "src/lib/autonomous-engineering/runner.ts",

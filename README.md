@@ -2,9 +2,10 @@
 ### Autonomous AI Software Engineering with Verifiable Trust & Governed Operations
 **Built for the Nebius × NVIDIA Global AI Hackathon**
 
-[![Smoke & Contract Tests](https://img.shields.io/badge/Smoke%20Tests-87%2F87%20Passing-brightgreen?style=for-the-badge&logo=githubactions)](https://github.com/akashbichukale111/AEGISNOVA)
+[![Smoke & Contract Tests](https://img.shields.io/badge/Smoke%20Tests-91%2F91%20Passing-brightgreen?style=for-the-badge&logo=githubactions)](https://github.com/akashbichukale111/AEGISNOVA)
 [![Platform Architecture](https://img.shields.io/badge/Architecture-12--Stage%20PCPR%20Multi--Agent-00D4FF?style=for-the-badge&logo=diagramsdotnet)](https://github.com/akashbichukale111/AEGISNOVA)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-Hopper%20GH100%20%7C%20Nemotron--4--340B-76B900?style=for-the-badge&logo=nvidia)](https://github.com/akashbichukale111/AEGISNOVA)
+[![Tavily AI Evidence](https://img.shields.io/badge/Tavily%20AI-Live%20Security%20Advisories%20%7C%20300k%20Quota-06B6D4?style=for-the-badge)](https://github.com/akashbichukale111/AEGISNOVA)
 [![UNWIND Governance](https://img.shields.io/badge/Governance-UNWIND%20Decaying%20Warrant-6366F1?style=for-the-badge)](https://github.com/akashbichukale111/AEGISNOVA)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
@@ -83,7 +84,7 @@ AEGISNOVA is an end-to-end autonomous software engineering and governed operatio
 | **Autonomous Operations** | `/operations` | Python Operations Service (`port 8080`) | **CONNECTED** |
 | **Security Center** | `/security` | DevGuard AI Scanner, Fixer & Validator | **LIVE** |
 | **Governance Core** | `/governance` | UNWIND Decaying Warrant Ledger & Human Countersign | **CONNECTED** |
-| **Evidence Intelligence** | `/evidence` | Evidence advisory graph & citation matrix | **PREVIEW** |
+| **Evidence Intelligence** | `/evidence` | Tavily AI Multi-Source Search & CVE Reconciliation | **LIVE (TAVILY AI SEARCH)** |
 | **Causal Impact** | `/causal-impact` | Blast-radius dependency graph | **PREVIEW** |
 | **Repair Assurance** | `/repair-assurance` | Cryptographic assertion verifier | **PREVIEW** |
 | **Audit & Observability** | `/audit` | Correlated trace timeline & SRE circuit breakers | **LIVE** |
