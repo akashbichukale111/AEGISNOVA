@@ -2,7 +2,7 @@
 ### Autonomous AI Software Engineering with Verifiable Trust & Governed Operations
 **Built for the Nebius × NVIDIA Global AI Hackathon**
 
-[![Smoke & Contract Tests](https://img.shields.io/badge/Smoke%20Tests-102%2F102%20Passing-brightgreen?style=for-the-badge&logo=githubactions)](https://github.com/akashbichukale111/AEGISNOVA)
+[![Smoke & Contract Tests](https://img.shields.io/badge/Smoke%20Tests-109%2F109%20Passing-brightgreen?style=for-the-badge&logo=githubactions)](https://github.com/akashbichukale111/AEGISNOVA)
 [![Platform Architecture](https://img.shields.io/badge/Architecture-12--Stage%20PCPR%20Multi--Agent-00D4FF?style=for-the-badge&logo=diagramsdotnet)](https://github.com/akashbichukale111/AEGISNOVA)
 [![NightShift 3 AM Patrol](https://img.shields.io/badge/NightShift%20SDE-Dual--Autonomy%20Patrol%20%26%20Triage-8B5CF6?style=for-the-badge&logo=probot)](https://github.com/akashbichukale111/AEGISNOVA)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-Hopper%20GH100%20%7C%20Nemotron--4--340B-76B900?style=for-the-badge&logo=nvidia)](https://github.com/akashbichukale111/AEGISNOVA)

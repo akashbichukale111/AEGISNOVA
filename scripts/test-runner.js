@@ -110,6 +110,22 @@ coreModules.forEach((mod) => {
   assert(fs.existsSync(fullPath), `Core module exists (${mod})`);
 });
 
+// 2.2 Verify Community, Governance & CI Specifications
+const communityContracts = [
+  ".github/workflows/ci.yml",
+  "docs/ARCHITECTURE.md",
+  "docs/API_REFERENCE.md",
+  "scripts/copilot-cli.js",
+  "CONTRIBUTING.md",
+  "CODE_OF_CONDUCT.md",
+  "SECURITY.md"
+];
+
+communityContracts.forEach((doc) => {
+  const fullPath = path.join(__dirname, '..', doc);
+  assert(fs.existsSync(fullPath), `Specification contract exists (${doc})`);
+});
+
 // 3. Verify Secrets Hygiene (No raw private keys or live API keys in src)
 const srcDir = path.join(__dirname, '..', 'src');
 function scanForSecrets(dir) {
