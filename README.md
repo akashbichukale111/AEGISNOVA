@@ -2,8 +2,9 @@
 ### Autonomous AI Software Engineering with Verifiable Trust & Governed Operations
 **Built for the Nebius × NVIDIA Global AI Hackathon**
 
-[![Smoke & Contract Tests](https://img.shields.io/badge/Smoke%20Tests-91%2F91%20Passing-brightgreen?style=for-the-badge&logo=githubactions)](https://github.com/akashbichukale111/AEGISNOVA)
+[![Smoke & Contract Tests](https://img.shields.io/badge/Smoke%20Tests-102%2F102%20Passing-brightgreen?style=for-the-badge&logo=githubactions)](https://github.com/akashbichukale111/AEGISNOVA)
 [![Platform Architecture](https://img.shields.io/badge/Architecture-12--Stage%20PCPR%20Multi--Agent-00D4FF?style=for-the-badge&logo=diagramsdotnet)](https://github.com/akashbichukale111/AEGISNOVA)
+[![NightShift 3 AM Patrol](https://img.shields.io/badge/NightShift%20SDE-Dual--Autonomy%20Patrol%20%26%20Triage-8B5CF6?style=for-the-badge&logo=probot)](https://github.com/akashbichukale111/AEGISNOVA)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-Hopper%20GH100%20%7C%20Nemotron--4--340B-76B900?style=for-the-badge&logo=nvidia)](https://github.com/akashbichukale111/AEGISNOVA)
 [![Tavily AI Evidence](https://img.shields.io/badge/Tavily%20AI-Live%20Security%20Advisories%20%7C%20300k%20Quota-06B6D4?style=for-the-badge)](https://github.com/akashbichukale111/AEGISNOVA)
 [![UNWIND Governance](https://img.shields.io/badge/Governance-UNWIND%20Decaying%20Warrant-6366F1?style=for-the-badge)](https://github.com/akashbichukale111/AEGISNOVA)
@@ -80,7 +81,8 @@ AEGISNOVA is an end-to-end autonomous software engineering and governed operatio
 | Module | Route | Underlying Engine | State |
 | :--- | :--- | :--- | :--- |
 | **Autonomous Engineering Studio** | `/engineering` | 12-Stage PCPR Engine + GitHub Client + Mode A Audit | **LIVE / VERIFIED** |
-| **NightShift SDE** | `/nightshift` | Python SDE Daemon (`port 8787`) | **CONNECTED** |
+| **NightShift 3 AM Patrol & Triage** | `/nightshift` | Dual-Autonomy Severity Engine + Recurrent Memory Cache | **LIVE / ACTIVE** |
+| **AI Engineering Copilot** | Floating Shell / `/nightshift` | GitHub URL Input Bar + Natural Language Multi-Agent Stream | **LIVE** |
 | **Autonomous Operations** | `/operations` | Python Operations Service (`port 8080`) | **CONNECTED** |
 | **Security Center** | `/security` | DevGuard AI Scanner, Fixer & Validator | **LIVE** |
 | **Governance Core** | `/governance` | UNWIND Decaying Warrant Ledger & Human Countersign | **CONNECTED** |
@@ -89,6 +91,43 @@ AEGISNOVA is an end-to-end autonomous software engineering and governed operatio
 | **Repair Assurance** | `/repair-assurance` | Cryptographic assertion verifier | **PREVIEW** |
 | **Audit & Observability** | `/audit` | Correlated trace timeline & SRE circuit breakers | **LIVE** |
 | **Settings & Integrations** | `/settings` | 8-module health registry & token security posture | **LIVE** |
+
+---
+
+## 🤖 NightShift 3 AM Patrol: Dual Autonomy Policy & Copilot Terminal
+
+AEGISNOVA introduces the **Dual Autonomy Policy** for on-call engineers, preventing unnecessary 3:00 AM wakeups while enforcing cryptographic human governance for critical changes:
+
+```
++-------------------------------------------------------------------------------------------------+
+|                               NIGHTSHIFT 3 AM AUTONOMOUS PATROL                                 |
++-------------------------------------------------------------------------------------------------+
+                                                |
+                              [ AST & Security Severity Classifier ]
+                                                |
+                 +------------------------------+------------------------------+
+                 |                                                             |
+                 v                                                             v
+    [ LOW / MEDIUM SEVERITY ]                                     [ HIGH / CRITICAL SEVERITY ]
+  - Linter errors, typing drift,                                - SQL injection, hardcoded secrets,
+    deprecated syntax, doc regressions                            RCE vectors, auth bypass
+                 |                                                             |
+                 v                                                             v
+  [ Zero-Wakeup Autonomous Fix ]                                [ Quarantined: WAITING_APPROVAL ]
+  - Synthesize bounded patch                                    - Formulate candidate patch
+  - Run deterministic test sandbox                              - Run Tavily live CVE verification
+  - Commit to Recurrent Memory Ledger                           - Prepare UNWIND warrant debit (-150 bp)
+                 |                                                             |
+                 v                                                             v
+  [ Next Occurrence: Instant Auto-Heal ]                        [ 1-Click SDE Countersignature ]
+  - Solved in 0 ms with 0 human interruption                    - SDE approves via Web UI in 1 click
+```
+
+### Key Capabilities:
+1. **Interactive GitHub URL Bar & Natural Language Prompting:** Paste any public or private GitHub repository (`https://github.com/org/repo`), select your target branch, and instruct agents in plain natural language.
+2. **Zero-Touch Auto-Healing (No Wakeup):** Low and Medium issues are resolved autonomously without triggering pagers.
+3. **Recurrent Incident Memory Ledger:** Solution patterns are stored in a self-learning ledger. If the same error signature recurs tomorrow night, agents recognize it and heal it immediately from memory.
+4. **UNWIND 1-Click SDE Approval:** High and Critical issues hold execution until the on-call SDE clicks "1-Click SDE Approve", which validates the patch, debits the UNWIND warrant ledger (`-150 bp`), and commits the changes.
 
 ---
 

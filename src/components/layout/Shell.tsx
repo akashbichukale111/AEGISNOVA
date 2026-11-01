@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { Modal } from "../ui/Modal";
+import { AegisChatbot } from "../copilot/AegisChatbot";
 import {
   Search,
   ShieldAlert,
@@ -109,6 +110,9 @@ export function Shell({ children }: ShellProps) {
           </div>
         </div>
       </Modal>
+
+      {/* Floating Autonomous AI Engineering Copilot */}
+      <AegisChatbot />
     </div>
   );
 }

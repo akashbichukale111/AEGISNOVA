@@ -25,10 +25,16 @@ import {
   Eye,
   RefreshCw,
   Lock,
-  Boxes
+  Boxes,
+  Bot,
+  Sparkles,
+  CheckCircle2,
+  Database
 } from "lucide-react";
+import { AegisChatbot } from "@/components/copilot/AegisChatbot";
+import { NightShiftIncident, RecurrentIncidentMemory } from "@/contracts";
 
-type SubTab = "overview" | "jobs" | "fleet" | "schedules" | "observatory" | "recovery";
+type SubTab = "overview" | "triage" | "jobs" | "fleet" | "schedules" | "observatory" | "recovery";
 
 interface FleetRepo {
   id: string;
@@ -82,12 +88,45 @@ export default function NightShiftPage() {
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
   const [selectedJob, setSelectedJob] = useState<NightShiftJob | null>(null);
 
+  // Copilot & 3 AM Incident states
+  const [copilotIncidents, setCopilotIncidents] = useState<NightShiftIncident[]>([]);
+  const [copilotMemories, setCopilotMemories] = useState<RecurrentIncidentMemory[]>([]);
+  const [copilotStats, setCopilotStats] = useState<any>(null);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+
   // Modals
   const [isTriggerModalOpen, setIsTriggerModalOpen] = useState(false);
   const [selectedRepoId, setSelectedRepoId] = useState<string>("");
   const [allowRepairChecked, setAllowRepairChecked] = useState(false);
   const [isTriggering, setIsTriggering] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+  const handleApproveIncident = async (incidentId: string) => {
+    setApprovingId(incidentId);
+    try {
+      const res = await fetch("/api/copilot/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          incident_id: incidentId,
+          approver: "SDE On-Call (Web UI)",
+          notes: "1-Click SDE verification approved from NightShift 3 AM Patrol"
+        })
+      });
+      if (res.ok) {
+        setActionMessage(`Incident ${incidentId} approved! UNWIND warrant debited (-150 bp).`);
+        await fetchNightShiftData();
+      } else {
+        const err = await res.json();
+        setActionMessage(`Approval failed: ${err.error || "Unknown error"}`);
+      }
+    } catch (e: any) {
+      setActionMessage(`Network error during approval: ${e.message}`);
+    } finally {
+      setApprovingId(null);
+      setTimeout(() => setActionMessage(null), 5000);
+    }
+  };
 
   const fetchNightShiftData = useCallback(async () => {
     setIsLoading(true);
@@ -121,6 +160,15 @@ export default function NightShiftPage() {
       if (schedRes.ok) {
         const sData = await schedRes.json();
         setSchedules(sData.schedules || sData.items || []);
+      }
+
+      // 5. Copilot Incidents & Recurrent Knowledge
+      const copilotRes = await fetch("/api/copilot/chat");
+      if (copilotRes.ok) {
+        const cData = await copilotRes.json();
+        setCopilotIncidents(cData.incidents || []);
+        setCopilotMemories(cData.memories || []);
+        setCopilotStats(cData.stats || null);
       }
 
       setLastUpdated(new Date());
@@ -296,6 +344,7 @@ export default function NightShiftPage() {
       <div className="flex items-center gap-1 border-b border-[#172235] overflow-x-auto pb-1 text-xs">
         {[
           { id: "overview", label: "Overview", icon: Activity },
+          { id: "triage", label: `3 AM Patrol & Triage (${copilotIncidents.length})`, icon: Bot },
           { id: "jobs", label: `Jobs (${jobs.length})`, icon: Terminal },
           { id: "fleet", label: `Repository Fleet (${fleet.length})`, icon: FolderGit2 },
           { id: "schedules", label: `Schedules (${schedules.length})`, icon: Calendar },
@@ -450,6 +499,261 @@ export default function NightShiftPage() {
                 )}
               </div>
             </Card>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "triage" && (
+        <div className="space-y-6">
+          {/* Dual Autonomy Policy Banner */}
+          <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-950/60 via-purple-950/40 to-slate-900 border border-indigo-800/40 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                  <Bot className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    NightShift 3 AM Autonomous Patrol & Triage Engine
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">
+                      DUAL AUTONOMY POLICY ACTIVE
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Engineered so SDEs never get woken up at 3:00 AM for low-severity drift, while retaining full UNWIND governance over critical changes.
+                  </p>
+                </div>
+              </div>
+              <Badge variant="info">RECURRENT MEMORY SYNCED</Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 text-xs">
+              <div className="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-800/40 text-emerald-300 space-y-1">
+                <span className="font-semibold text-emerald-200 flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  LOW / MEDIUM Severity (Zero Wakeup Policy)
+                </span>
+                <p className="text-[11px] text-emerald-400/80">
+                  Autonomous sandbox verification and self-healing. Solutions are indexed in the Recurrent Memory Ledger. If the same error occurs tomorrow night, agents auto-heal it instantly without waking anyone.
+                </p>
+              </div>
+              <div className="p-2.5 rounded-lg bg-amber-950/20 border border-amber-800/40 text-amber-300 space-y-1">
+                <span className="font-semibold text-amber-200 flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5" />
+                  HIGH / CRITICAL Severity (UNWIND Governance)
+                </span>
+                <p className="text-[11px] text-amber-400/80">
+                  Agents formulate candidate patches and run Tavily live CVE verification, but hold in <span className="font-mono">WAITING_FOR_SDE_APPROVAL</span>. SDE delivers a 1-Click approval debiting -150 bp warrants.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 4 Metrics Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard
+              label="Zero-Touch Auto-Resolved"
+              value={copilotIncidents.filter(i => i.action === "AUTO_RESOLVED_NO_SDE_WAKEUP" || i.action === "RECURRENT_HEALED_FROM_MEMORY").length}
+              subtext="Solved at 3 AM without SDE wakeup"
+              severity="success"
+            />
+            <MetricCard
+              label="Recurrent Memory Healed"
+              value={copilotIncidents.filter(i => i.action === "RECURRENT_HEALED_FROM_MEMORY" || i.memoryHit).length}
+              subtext="Healed from past incident ledger"
+              severity="success"
+            />
+            <MetricCard
+              label="Waiting for SDE Approval"
+              value={copilotIncidents.filter(i => i.action === "WAITING_FOR_SDE_APPROVAL" && !i.sdeApproved).length}
+              subtext="High / Critical human approval required"
+              severity={copilotIncidents.filter(i => i.action === "WAITING_FOR_SDE_APPROVAL" && !i.sdeApproved).length > 0 ? "warning" : "normal"}
+            />
+            <MetricCard
+              label="Learned Pattern Signatures"
+              value={copilotMemories.length}
+              subtext="Autonomous memory templates"
+              severity="normal"
+            />
+          </div>
+
+          {/* Active Incidents Queue */}
+          <Card className="p-5 bg-[#0B0F19] border-[#172235]">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-400" />
+                  Live 3 AM Autonomous Incident Patrol Queue
+                </h4>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Real-time security scanner, test regression detector, and automated triage ledger.
+                </p>
+              </div>
+              <Button variant="ghost" size="sm" onClick={fetchNightShiftData} className="text-xs text-indigo-400 gap-1.5">
+                <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+                Refresh Patrol
+              </Button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-[#172235] text-slate-400 font-mono text-[11px]">
+                    <th className="py-2.5 px-3">INCIDENT</th>
+                    <th className="py-2.5 px-3">SEVERITY</th>
+                    <th className="py-2.5 px-3">REPOSITORY</th>
+                    <th className="py-2.5 px-3">ACTION TAKEN</th>
+                    <th className="py-2.5 px-3">STATUS</th>
+                    <th className="py-2.5 px-3 text-right">SDE INTERVENTION</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#172235]/60">
+                  {copilotIncidents.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-8 text-xs text-slate-500">
+                        No active incidents in the 3 AM patrol queue. All repositories healthy.
+                      </td>
+                    </tr>
+                  ) : (
+                    copilotIncidents.map(inc => {
+                      const isWaiting = inc.action === "WAITING_FOR_SDE_APPROVAL" && !inc.sdeApproved;
+                      const isApproving = approvingId === inc.id;
+                      const isAuto = inc.action === "AUTO_RESOLVED_NO_SDE_WAKEUP" || inc.action === "RECURRENT_HEALED_FROM_MEMORY";
+                      const detectedDate = inc.detectedAt ? new Date(inc.detectedAt).toLocaleTimeString() : "Just now";
+
+                      return (
+                        <tr key={inc.id} className="hover:bg-slate-900/40 transition-colors">
+                          <td className="py-3 px-3">
+                            <div className="font-semibold text-white">{inc.title}</div>
+                            <div className="text-[10px] text-slate-500 font-mono mt-0.5">{inc.id} • {detectedDate}</div>
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                              inc.severity === "CRITICAL" ? "bg-red-950 text-red-300 border border-red-700" :
+                              inc.severity === "HIGH" ? "bg-amber-950 text-amber-300 border border-amber-700" :
+                              inc.severity === "MEDIUM" ? "bg-cyan-950 text-cyan-300 border border-cyan-800" :
+                              "bg-slate-800 text-slate-300 border border-slate-700"
+                            }`}>
+                              {inc.severity}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 font-mono text-indigo-300 text-[11px]">
+                            {inc.repoId || "demo/service"}
+                          </td>
+                          <td className="py-3 px-3">
+                            {inc.action === "AUTO_RESOLVED_NO_SDE_WAKEUP" && (
+                              <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-medium">
+                                <Sparkles className="h-3 w-3" /> Auto-Fixed (Zero Wakeup)
+                              </span>
+                            )}
+                            {inc.action === "RECURRENT_HEALED_FROM_MEMORY" && (
+                              <span className="text-[11px] text-cyan-400 flex items-center gap-1 font-medium">
+                                <RotateCcw className="h-3 w-3" /> Memory Healed (Instant)
+                              </span>
+                            )}
+                            {inc.action === "WAITING_FOR_SDE_APPROVAL" && (
+                              <span className="text-[11px] text-amber-400 flex items-center gap-1 font-medium">
+                                <Lock className="h-3 w-3" /> UNWIND 1-Click Gate
+                              </span>
+                            )}
+                            {inc.action === "SDE_APPROVED_AND_EXECUTED" && (
+                              <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-medium">
+                                <CheckCircle className="h-3 w-3" /> SDE Approved & Applied
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-3">
+                            {isWaiting && (
+                              <span className="px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-700 text-[10px] font-mono">
+                                WAITING_APPROVAL
+                              </span>
+                            )}
+                            {isAuto && (
+                              <span className="px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800 text-[10px] font-mono">
+                                RESOLVED
+                              </span>
+                            )}
+                            {inc.action === "SDE_APPROVED_AND_EXECUTED" && (
+                              <span className="px-2 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-700 text-[10px] font-mono">
+                                DELIVERED
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-3 text-right">
+                            {isWaiting ? (
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => handleApproveIncident(inc.id)}
+                                disabled={isApproving}
+                                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] px-3 py-1 shadow-lg shadow-amber-500/20"
+                              >
+                                {isApproving ? "Executing..." : "1-Click SDE Approve"}
+                              </Button>
+                            ) : (
+                              <span className="text-[11px] text-emerald-400 flex items-center justify-end gap-1 font-mono">
+                                <CheckCircle className="h-3.5 w-3.5" /> No Action Needed
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          {/* Recurrent Memory Ledger & Self-Healing Cache */}
+          <Card className="p-5 bg-[#0B0F19] border-[#172235]">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <Database className="h-4 w-4 text-cyan-400" />
+                  Recurrent Incident Memory Ledger (Autonomous Self-Healing)
+                </h4>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  When a recurring problem happens tomorrow night, AI agents recognise the signature and resolve it immediately without human intervention.
+                </p>
+              </div>
+              <Badge variant="info">{copilotMemories.length} Patterns Stored</Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {copilotMemories.map(mem => (
+                <div key={mem.id} className="p-3.5 rounded-lg bg-[#070A10] border border-[#172235] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs text-cyan-300 font-bold">{mem.patternSignature}</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-800">
+                      Healed {mem.timesResolved}x
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-300">{mem.rootCause}</div>
+                  <div className="p-2 rounded bg-slate-900/60 border border-slate-800/80 font-mono text-[11px] text-emerald-300">
+                    Fix: {mem.solutionDiff}
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-1">
+                    <span>Severity: {mem.severity}</span>
+                    <span>Last Resolved: {new Date(mem.lastAppliedAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Embedded Full Interactive Chatbot */}
+          <div>
+            <div className="mb-2">
+              <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-indigo-400" />
+                Autonomous Copilot Terminal (GitHub & Natural Language)
+              </h4>
+              <p className="text-xs text-slate-400">
+                Paste any GitHub repository URL below, type your engineering prompt, and let the dual-autonomy agent audit, patch, and test your code.
+              </p>
+            </div>
+            <AegisChatbot embedded={true} defaultRepo={fleet[0]?.id || "demo/payments-service"} />
           </div>
         </div>
       )}

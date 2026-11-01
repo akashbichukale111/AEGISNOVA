@@ -594,3 +594,69 @@ export interface AgentRun {
   completedAt?: string;
 }
 
+/**
+ * =========================================================================
+ * NIGHTSHIFT AUTONOMOUS SEVERITY & COPILOT CHATBOT CONTRACTS
+ * =========================================================================
+ */
+
+export type IncidentSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+export type AutonomyResolutionAction = 
+  | "AUTO_RESOLVED_NO_SDE_WAKEUP" 
+  | "RECURRENT_HEALED_FROM_MEMORY"
+  | "WAITING_FOR_SDE_APPROVAL"
+  | "SDE_APPROVED_AND_EXECUTED";
+
+export interface RecurrentIncidentMemory {
+  id: string;
+  patternSignature: string;
+  title: string;
+  severity: IncidentSeverity;
+  rootCause: string;
+  solutionDiff: string;
+  timesResolved: number;
+  firstSeenAt: string;
+  lastAppliedAt: string;
+}
+
+export interface NightShiftIncident {
+  id: string;
+  repoId: string;
+  repoUrl: string;
+  title: string;
+  description: string;
+  severity: IncidentSeverity;
+  detectedAt: string;
+  action: AutonomyResolutionAction;
+  requiresSdeApproval: boolean;
+  sdeApproved?: boolean;
+  sdeApprovedAt?: string;
+  runId?: string;
+  patchSummary?: string;
+  testPassProof?: string;
+  evidenceRef?: string;
+  memoryHit?: boolean;
+}
+
+export interface CopilotChatMessage {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp: string;
+  repoTarget?: string;
+  severity?: IncidentSeverity;
+  autonomyAction?: AutonomyResolutionAction;
+  runId?: string;
+  incidentId?: string;
+  suggestedPrompts?: string[];
+  executionPreview?: {
+    diffSnippet?: string;
+    testsPassed?: number;
+    totalTests?: number;
+    warrantDebitBp?: number;
+    requiresApproval?: boolean;
+  };
+}
+
+

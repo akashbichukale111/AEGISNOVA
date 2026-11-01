@@ -53,7 +53,10 @@ const requiredSchemas = [
   "GitHubConnection",
   "RepoAuditFinding",
   "RepoArchitectureMap",
-  "RepoAuditReport"
+  "RepoAuditReport",
+  "NightShiftIncident",
+  "RecurrentIncidentMemory",
+  "CopilotChatMessage"
 ];
 
 requiredSchemas.forEach((schema) => {
@@ -96,6 +99,10 @@ const coreModules = [
   "src/lib/github/client.ts",
   "src/lib/repo-intelligence/analyzer.ts",
   "src/lib/autonomous-engineering/runner.ts",
+  "src/app/api/copilot/chat/route.ts",
+  "src/app/api/copilot/approve/route.ts",
+  "src/lib/copilot/engine.ts",
+  "src/components/copilot/AegisChatbot.tsx",
 ];
 
 coreModules.forEach((mod) => {
