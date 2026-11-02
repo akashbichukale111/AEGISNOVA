@@ -38,8 +38,10 @@ export interface RunOptions {
   nvidiaApiKey?: string;
 }
 
-// In-memory active runs store for live polling
-const RUNS_STORE = new Map<string, AgentRun>();
+// In-memory active runs store for live polling (persisted across Next.js dev reloads)
+const globalForRuns = globalThis as unknown as { aegisRunsStore?: Map<string, AgentRun> };
+const RUNS_STORE = globalForRuns.aegisRunsStore || new Map<string, AgentRun>();
+globalForRuns.aegisRunsStore = RUNS_STORE;
 
 export function getAgentRun(runId: string): AgentRun | undefined {
   return RUNS_STORE.get(runId);
