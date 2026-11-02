@@ -103,6 +103,8 @@ const coreModules = [
   "src/app/api/copilot/approve/route.ts",
   "src/lib/copilot/engine.ts",
   "src/components/copilot/AegisChatbot.tsx",
+  "src/lib/observability/metrics.ts",
+  "src/lib/autonomous-engineering/patch-validator.ts",
 ];
 
 coreModules.forEach((mod) => {
@@ -115,6 +117,8 @@ const communityContracts = [
   ".github/workflows/ci.yml",
   "docs/ARCHITECTURE.md",
   "docs/API_REFERENCE.md",
+  "docs/DEPLOYMENT.md",
+  "docs/RUNBOOKS.md",
   "scripts/copilot-cli.js",
   "CONTRIBUTING.md",
   "CODE_OF_CONDUCT.md",
